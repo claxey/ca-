@@ -1,0 +1,1780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Computer Architecture — Interactive Study Guide</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Sora:wght@300;400;500;600;700&display=swap');
+
+  :root {
+    --bg: #0d0f14;
+    --bg2: #13161e;
+    --bg3: #1a1e28;
+    --bg4: #222736;
+    --border: #2a2f3f;
+    --border2: #363d52;
+    --text: #e8eaf0;
+    --text2: #9ba3b8;
+    --text3: #6b7494;
+    --accent: #5b8df8;
+    --accent2: #7aa3ff;
+    --accent-bg: rgba(91,141,248,0.1);
+    --accent-border: rgba(91,141,248,0.3);
+    --green: #4ade80;
+    --green-bg: rgba(74,222,128,0.1);
+    --red: #f87171;
+    --red-bg: rgba(248,113,113,0.1);
+    --amber: #fbbf24;
+    --amber-bg: rgba(251,191,36,0.1);
+    --purple: #a78bfa;
+    --purple-bg: rgba(167,139,250,0.1);
+    --teal: #2dd4bf;
+    --teal-bg: rgba(45,212,191,0.1);
+    --coral: #fb923c;
+    --coral-bg: rgba(251,146,60,0.1);
+    --sidebar-w: 280px;
+    --mono: 'JetBrains Mono', monospace;
+    --sans: 'Sora', sans-serif;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--sans);
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* SIDEBAR */
+  #sidebar {
+    width: var(--sidebar-w);
+    min-width: var(--sidebar-w);
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .sidebar-header {
+    padding: 20px 18px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .sidebar-header h1 {
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent2);
+    font-family: var(--mono);
+  }
+  .sidebar-header p {
+    font-size: 11px;
+    color: var(--text3);
+    margin-top: 4px;
+  }
+
+  .progress-bar {
+    margin: 12px 18px 0;
+    background: var(--bg3);
+    border-radius: 99px;
+    height: 4px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--purple));
+    border-radius: 99px;
+    transition: width 0.4s ease;
+  }
+  .progress-label {
+    font-size: 10px;
+    color: var(--text3);
+    font-family: var(--mono);
+    margin: 5px 18px 0;
+  }
+
+  .nav-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px 0;
+  }
+  .nav-list::-webkit-scrollbar { width: 4px; }
+  .nav-list::-webkit-scrollbar-track { background: transparent; }
+  .nav-list::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+
+  .nav-section {
+    padding: 8px 18px 4px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text3);
+    font-family: var(--mono);
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 18px;
+    cursor: pointer;
+    transition: background 0.15s;
+    border-left: 2px solid transparent;
+    font-size: 13px;
+    color: var(--text2);
+    user-select: none;
+  }
+  .nav-item:hover { background: var(--bg3); color: var(--text); }
+  .nav-item.active {
+    background: var(--accent-bg);
+    border-left-color: var(--accent);
+    color: var(--accent2);
+  }
+  .nav-item .nav-num {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text3);
+    min-width: 18px;
+  }
+  .nav-item.active .nav-num { color: var(--accent); }
+  .nav-item .check {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--green);
+    display: none;
+  }
+  .nav-item.done .check { display: block; }
+
+  /* MAIN */
+  #main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0;
+  }
+  #main::-webkit-scrollbar { width: 6px; }
+  #main::-webkit-scrollbar-track { background: transparent; }
+  #main::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+
+  .topic-content {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 40px 40px 80px;
+  }
+
+  .topic-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--accent-bg);
+    border: 1px solid var(--accent-border);
+    border-radius: 99px;
+    padding: 3px 12px;
+    font-size: 11px;
+    font-family: var(--mono);
+    color: var(--accent);
+    margin-bottom: 14px;
+  }
+
+  .topic-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.25;
+    margin-bottom: 8px;
+  }
+
+  .topic-subtitle {
+    font-size: 15px;
+    color: var(--text2);
+    margin-bottom: 30px;
+  }
+
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 28px 0;
+  }
+
+  h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+    margin: 24px 0 10px;
+  }
+
+  p { color: var(--text2); margin-bottom: 12px; line-height: 1.75; }
+
+  /* INFO BOXES */
+  .box {
+    border-radius: 10px;
+    padding: 16px 18px;
+    margin: 16px 0;
+    border: 1px solid;
+  }
+  .box-info { background: var(--accent-bg); border-color: var(--accent-border); }
+  .box-info .box-title { color: var(--accent2); }
+  .box-green { background: var(--green-bg); border-color: rgba(74,222,128,0.25); }
+  .box-green .box-title { color: var(--green); }
+  .box-amber { background: var(--amber-bg); border-color: rgba(251,191,36,0.25); }
+  .box-amber .box-title { color: var(--amber); }
+  .box-purple { background: var(--purple-bg); border-color: rgba(167,139,250,0.25); }
+  .box-purple .box-title { color: var(--purple); }
+  .box-teal { background: var(--teal-bg); border-color: rgba(45,212,191,0.25); }
+  .box-teal .box-title { color: var(--teal); }
+  .box-coral { background: var(--coral-bg); border-color: rgba(251,146,60,0.25); }
+  .box-coral .box-title { color: var(--coral); }
+
+  .box-title {
+    font-size: 11px;
+    font-weight: 600;
+    font-family: var(--mono);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .box p { margin-bottom: 0; font-size: 14px; }
+
+  /* CODE BLOCKS */
+  .code-block {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text);
+    margin: 14px 0;
+    overflow-x: auto;
+    line-height: 1.7;
+  }
+  .code-block .comment { color: var(--text3); }
+  .code-block .kw { color: var(--purple); }
+  .code-block .val { color: var(--amber); }
+  .code-block .str { color: var(--green); }
+  .code-block .op { color: var(--accent); }
+
+  /* TABLES */
+  .styled-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 13px;
+  }
+  .styled-table th {
+    background: var(--bg3);
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--text);
+    border-bottom: 1px solid var(--border2);
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.04em;
+  }
+  .styled-table td {
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text2);
+    vertical-align: top;
+  }
+  .styled-table tr:last-child td { border-bottom: none; }
+  .styled-table tr:hover td { background: var(--bg3); }
+
+  /* DIAGRAM */
+  .diagram {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    margin: 16px 0;
+    overflow-x: auto;
+  }
+
+  /* LAYER STACK */
+  .layer-stack { display: flex; flex-direction: column; gap: 3px; margin: 16px 0; }
+  .layer {
+    padding: 10px 18px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: default;
+    transition: filter 0.2s;
+  }
+  .layer:hover { filter: brightness(1.2); }
+  .layer-label { font-family: var(--mono); font-size: 11px; }
+
+  /* QUIZ */
+  .quiz-section {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    margin: 30px 0 0;
+  }
+  .quiz-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+  .quiz-header h3 { margin: 0; font-size: 15px; }
+  .quiz-badge {
+    background: var(--purple-bg);
+    border: 1px solid rgba(167,139,250,0.25);
+    color: var(--purple);
+    font-size: 11px;
+    font-family: var(--mono);
+    padding: 2px 10px;
+    border-radius: 99px;
+  }
+  .quiz-q {
+    font-size: 14px;
+    color: var(--text);
+    margin-bottom: 14px;
+    font-weight: 500;
+  }
+  .quiz-options { display: flex; flex-direction: column; gap: 8px; }
+  .quiz-opt {
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--text2);
+    background: var(--bg3);
+    transition: all 0.15s;
+    text-align: left;
+  }
+  .quiz-opt:hover { border-color: var(--border2); color: var(--text); background: var(--bg4); }
+  .quiz-opt.correct { border-color: rgba(74,222,128,0.5); background: var(--green-bg); color: var(--green); }
+  .quiz-opt.wrong { border-color: rgba(248,113,113,0.5); background: var(--red-bg); color: var(--red); }
+  .quiz-opt.disabled { cursor: default; pointer-events: none; }
+
+  .quiz-feedback {
+    margin-top: 14px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    display: none;
+  }
+  .quiz-feedback.show { display: block; }
+  .quiz-feedback.correct { background: var(--green-bg); border: 1px solid rgba(74,222,128,0.25); color: var(--green); }
+  .quiz-feedback.wrong { background: var(--red-bg); border: 1px solid rgba(248,113,113,0.25); color: var(--red); }
+
+  .quiz-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 18px;
+  }
+  .quiz-progress { font-size: 12px; color: var(--text3); font-family: var(--mono); }
+
+  .btn {
+    padding: 8px 18px;
+    border-radius: 8px;
+    border: 1px solid var(--border2);
+    background: var(--bg3);
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .btn:hover { background: var(--bg4); border-color: var(--accent-border); color: var(--accent2); }
+  .btn-primary {
+    background: var(--accent-bg);
+    border-color: var(--accent-border);
+    color: var(--accent2);
+  }
+  .btn-primary:hover { background: rgba(91,141,248,0.2); }
+  .btn:disabled { opacity: 0.4; cursor: default; }
+
+  /* REGISTER VIZ */
+  .register-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 6px 0;
+    font-family: var(--mono);
+    font-size: 13px;
+  }
+  .reg-name {
+    width: 50px;
+    color: var(--accent2);
+    font-weight: 500;
+  }
+  .reg-bits {
+    display: flex;
+    gap: 2px;
+  }
+  .bit {
+    width: 22px;
+    height: 26px;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: var(--green);
+    transition: all 0.2s;
+    cursor: default;
+  }
+  .bit.hi { background: rgba(74,222,128,0.15); border-color: rgba(74,222,128,0.4); }
+  .bit-group-label {
+    font-size: 10px;
+    color: var(--text3);
+    text-align: center;
+    margin-top: 2px;
+  }
+  .reg-desc { color: var(--text2); font-size: 12px; margin-left: 6px; }
+
+  /* INTERACTIVE DEMO */
+  .demo-box {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    margin: 16px 0;
+  }
+  .demo-title {
+    font-size: 12px;
+    font-family: var(--mono);
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 14px;
+  }
+
+  /* BUS DEMO */
+  .bus-reg {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 16px;
+    border-radius: 6px;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .bus-reg:hover { border-color: var(--accent-border); color: var(--accent2); }
+  .bus-reg.selected { background: var(--accent-bg); border-color: var(--accent); color: var(--accent2); }
+  .bus-line {
+    height: 3px;
+    background: var(--border2);
+    position: relative;
+    margin: 8px 0;
+    border-radius: 2px;
+    transition: background 0.3s;
+  }
+  .bus-line.active { background: var(--accent); box-shadow: 0 0 8px var(--accent-border); }
+
+  /* INSTRUCTION CYCLE */
+  .cycle-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 14px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg3);
+    margin: 8px 0;
+    transition: all 0.3s;
+  }
+  .cycle-step.active-step {
+    border-color: var(--accent-border);
+    background: var(--accent-bg);
+  }
+  .cycle-step-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--bg4);
+    border: 1px solid var(--border2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--text2);
+    flex-shrink: 0;
+    transition: all 0.3s;
+  }
+  .cycle-step.active-step .cycle-step-num {
+    background: var(--accent-bg);
+    border-color: var(--accent);
+    color: var(--accent2);
+  }
+  .cycle-step-title { font-weight: 600; font-size: 14px; color: var(--text); }
+  .cycle-step-desc { font-size: 13px; color: var(--text2); margin-top: 3px; }
+
+  .scroll-top-btn {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    color: var(--text2);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    transition: all 0.2s;
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .scroll-top-btn.visible { opacity: 1; pointer-events: auto; }
+  .scroll-top-btn:hover { background: var(--bg4); color: var(--accent2); border-color: var(--accent-border); }
+
+  .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-family: var(--mono);
+    margin: 2px;
+  }
+  .tag-blue { background: var(--accent-bg); color: var(--accent2); }
+  .tag-green { background: var(--green-bg); color: var(--green); }
+  .tag-amber { background: var(--amber-bg); color: var(--amber); }
+  .tag-purple { background: var(--purple-bg); color: var(--purple); }
+  .tag-teal { background: var(--teal-bg); color: var(--teal); }
+  .tag-coral { background: var(--coral-bg); color: var(--coral); }
+
+  ul, ol { padding-left: 1.4em; margin: 10px 0; }
+  li { color: var(--text2); margin: 5px 0; font-size: 14px; line-height: 1.65; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 14px 0; }
+  @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
+
+  .mono-label { font-family: var(--mono); font-size: 12px; color: var(--accent); }
+
+  .exam-tip {
+    border-left: 3px solid var(--amber);
+    padding-left: 14px;
+    margin: 14px 0;
+  }
+  .exam-tip .tip-label { font-size: 11px; font-family: var(--mono); color: var(--amber); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 4px; }
+  .exam-tip p { font-size: 13px; margin: 0; }
+
+  .formula {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 16px;
+    font-family: var(--mono);
+    font-size: 14px;
+    color: var(--purple);
+    margin: 10px 0;
+    text-align: center;
+  }
+
+  /* Microop table */
+  .micro-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin: 14px 0;
+  }
+  .micro-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+  }
+  .micro-card-title { font-family: var(--mono); font-size: 12px; color: var(--text3); margin-bottom: 6px; }
+  .micro-card-op { font-family: var(--mono); font-size: 13px; color: var(--accent2); margin: 3px 0; }
+  .micro-card-desc { font-size: 12px; color: var(--text2); }
+
+  /* Loading */
+  #loading { display: flex; align-items: center; justify-content: center; height: 100vh; flex-direction: column; gap: 10px; }
+  #loading .spin { width: 30px; height: 30px; border: 2px solid var(--border2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div id="sidebar">
+  <div class="sidebar-header">
+    <h1>CompArch Study</h1>
+    <p>Mano Book — All 7 Lectures</p>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+  <p class="progress-label" id="progress-label">0 / 14 topics done</p>
+  <div class="nav-list" id="nav-list"></div>
+</div>
+
+<div id="main">
+  <div class="topic-content" id="topic-content">
+    <div id="loading"><div class="spin"></div><p style="color:var(--text3);font-size:13px;">Loading topics...</p></div>
+  </div>
+</div>
+
+<button class="scroll-top-btn" id="scroll-top" onclick="document.getElementById('main').scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<script>
+const topics = [
+  {
+    id: 'intro',
+    lecture: 'Lecture 1',
+    title: 'What is Computer Architecture?',
+    subtitle: 'Abstraction layers, ISA, and the bridge between software and hardware',
+    content: () => `
+      <p>Computer Architecture sits at the boundary between pure computer science and pure electronics. It's the study of the design and organization of computer systems — how hardware and software interact through carefully designed layers of abstraction.</p>
+
+      <h3>The Abstraction Stack</h3>
+      <p>Think of a computer as a tower of layers. Each layer hides complexity from the one above it, communicating only through well-defined interfaces.</p>
+      <div class="layer-stack" id="layer-stack"></div>
+
+      <div class="box box-info">
+        <div class="box-title">💡 Key Insight</div>
+        <p>Computer Architecture specifically covers the <strong>ISA, Microarchitecture, RTL, Gates, and Devices</strong> layers — bridging pure CS (algorithms, languages) and pure Electronics (physics).</p>
+      </div>
+
+      <h3>General Computer Block Diagram</h3>
+      <p>Every computer, from a smartwatch to a supercomputer, contains these fundamental components:</p>
+      <div class="diagram">
+        <svg width="100%" viewBox="0 0 600 260" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace">
+          <!-- CPU box -->
+          <rect x="180" y="20" width="240" height="160" rx="8" fill="#1a1e28" stroke="#363d52" stroke-width="1.5"/>
+          <text x="300" y="42" text-anchor="middle" fill="#5b8df8" font-size="12" font-weight="600">CPU</text>
+          <rect x="200" y="52" width="90" height="46" rx="5" fill="#222736" stroke="#2a2f3f"/>
+          <text x="245" y="71" text-anchor="middle" fill="#e8eaf0" font-size="11">Datapath</text>
+          <text x="245" y="88" text-anchor="middle" fill="#9ba3b8" font-size="10">(ALU, Registers)</text>
+          <rect x="310" y="52" width="90" height="46" rx="5" fill="#222736" stroke="#2a2f3f"/>
+          <text x="355" y="71" text-anchor="middle" fill="#e8eaf0" font-size="11">Control</text>
+          <text x="355" y="88" text-anchor="middle" fill="#9ba3b8" font-size="10">(FSM, Timing)</text>
+          <rect x="210" y="112" width="160" height="36" rx="5" fill="#222736" stroke="#2a2f3f"/>
+          <text x="290" y="135" text-anchor="middle" fill="#e8eaf0" font-size="11">Cache Memory</text>
+          <!-- Memory -->
+          <rect x="30" y="80" width="110" height="50" rx="5" fill="#1a1e28" stroke="#363d52"/>
+          <text x="85" y="101" text-anchor="middle" fill="#4ade80" font-size="11">Memory</text>
+          <text x="85" y="118" text-anchor="middle" fill="#9ba3b8" font-size="9">(RAM / ROM)</text>
+          <!-- Input -->
+          <rect x="460" y="56" width="110" height="40" rx="5" fill="#1a1e28" stroke="#363d52"/>
+          <text x="515" y="81" text-anchor="middle" fill="#fbbf24" font-size="11">Input Devices</text>
+          <!-- Output -->
+          <rect x="460" y="120" width="110" height="40" rx="5" fill="#1a1e28" stroke="#363d52"/>
+          <text x="515" y="145" text-anchor="middle" fill="#a78bfa" font-size="11">Output Devices</text>
+          <!-- Bus line -->
+          <line x1="140" y1="105" x2="180" y2="105" stroke="#5b8df8" stroke-width="2" marker-end="url(#arr)"/>
+          <line x1="420" y1="105" x2="460" y2="76" stroke="#5b8df8" stroke-width="2"/>
+          <line x1="420" y1="105" x2="460" y2="140" stroke="#5b8df8" stroke-width="2"/>
+          <defs><marker id="arr" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#5b8df8"/></marker></defs>
+          <!-- Bus label -->
+          <text x="300" y="220" text-anchor="middle" fill="#6b7494" font-size="11">— Common Bus System —</text>
+          <line x1="30" y1="210" x2="570" y2="210" stroke="#2a2f3f" stroke-width="2" stroke-dasharray="5,4"/>
+        </svg>
+      </div>
+
+      <h3>How Programs Run</h3>
+      <div class="two-col">
+        <div class="box box-purple">
+          <div class="box-title">High-Level Language</div>
+          <p>Python, Java, C — human readable. Translated by a <strong>Compiler</strong> into Assembly.</p>
+        </div>
+        <div class="box box-teal">
+          <div class="box-title">Assembly Language</div>
+          <p>ADD R1, R2 — human-readable mnemonics. Translated by an <strong>Assembler</strong> into binary.</p>
+        </div>
+      </div>
+      <div class="box box-green">
+        <div class="box-title">Binary Machine Language</div>
+        <p>01001101 00110001 ... — the actual bits that the hardware executes.</p>
+      </div>
+
+      <h3>Classes of Computers</h3>
+      <table class="styled-table">
+        <thead><tr><th>Class</th><th>Examples</th><th>Key Emphasis</th></tr></thead>
+        <tbody>
+          <tr><td>Desktop/Laptop</td><td>PCs, MacBooks</td><td>Price-Performance balance</td></tr>
+          <tr><td>Servers</td><td>Web servers, DBs</td><td>Availability, Scalability, Throughput</td></tr>
+          <tr><td>Personal Mobile Devices</td><td>Phones, Tablets</td><td>Energy Efficiency</td></tr>
+          <tr><td>Embedded Computers</td><td>Microwaves, Cars</td><td>Low price, specific function</td></tr>
+          <tr><td>Warehouse Scale / Supercomputers</td><td>Google, AWS, HPC</td><td>Floating point, Price, Availability</td></tr>
+        </tbody>
+      </table>
+    `,
+    setup: () => {
+      const layers = [
+        { name: 'Application', color: '#5b8df8', bg: 'rgba(91,141,248,0.15)', zone: 'Pure CS' },
+        { name: 'Algorithms', color: '#7aa3ff', bg: 'rgba(91,141,248,0.12)', zone: '' },
+        { name: 'Programming Languages', color: '#a78bfa', bg: 'rgba(167,139,250,0.12)', zone: '' },
+        { name: 'Operating System', color: '#c084fc', bg: 'rgba(192,132,252,0.12)', zone: '' },
+        { name: 'ISA (Instruction Set Architecture)', color: '#e879f9', bg: 'rgba(232,121,249,0.15)', zone: '← Computer Architecture →' },
+        { name: 'Microarchitecture', color: '#f472b6', bg: 'rgba(244,114,182,0.12)', zone: '' },
+        { name: 'RTL (Register Transfer Level)', color: '#fb923c', bg: 'rgba(251,146,60,0.12)', zone: '' },
+        { name: 'Gates / Circuits', color: '#fbbf24', bg: 'rgba(251,191,36,0.12)', zone: '' },
+        { name: 'Devices (Transistors)', color: '#4ade80', bg: 'rgba(74,222,128,0.12)', zone: 'Pure Electronics' },
+        { name: 'Physics', color: '#2dd4bf', bg: 'rgba(45,212,191,0.12)', zone: '' },
+      ];
+      const container = document.getElementById('layer-stack');
+      if (!container) return;
+      container.innerHTML = layers.map(l => `
+        <div class="layer" style="background:${l.bg};border:1px solid ${l.color}30;color:${l.color}">
+          <span style="font-size:13px;font-weight:500">${l.name}</span>
+          <span class="layer-label" style="color:${l.color}99;font-size:10px">${l.zone}</span>
+        </div>
+      `).join('');
+    },
+    quiz: [
+      { q: 'Which layer acts as the interface between software and hardware?', opts: ['Operating System', 'ISA (Instruction Set Architecture)', 'Physics Layer', 'Algorithms'], ans: 1, exp: 'The ISA is the critical contract between what software expects and what hardware provides. It defines instructions, registers, and addressing modes.' },
+      { q: 'What translates Assembly Language into binary machine code?', opts: ['Compiler', 'Interpreter', 'Assembler', 'Linker'], ans: 2, exp: 'An Assembler converts human-readable assembly mnemonics (like ADD, MOV) into binary machine language.' },
+      { q: 'Which class of computers emphasizes energy efficiency above all?', opts: ['Servers', 'Desktop Computing', 'Personal Mobile Devices', 'Supercomputers'], ans: 2, exp: 'PMDs (phones, tablets) run on batteries, so energy efficiency is the top design priority.' },
+    ]
+  },
+  {
+    id: 'memory',
+    lecture: 'Lecture 2',
+    title: 'Memory Unit: RAM & ROM',
+    subtitle: 'How computers store data — volatile vs. non-volatile storage explained',
+    content: () => `
+      <p>Memory is the component that stores the data and instructions a computer works with. There are two fundamental types — RAM (read/write) and ROM (read-only).</p>
+
+      <h3>RAM — Random Access Memory</h3>
+      <div class="box box-info">
+        <div class="box-title">Definition</div>
+        <p>RAM allows any memory cell to be accessed for reading or writing in roughly the same time, regardless of its physical location. It's the computer's working memory.</p>
+      </div>
+      <p>A RAM chip communicates with the outside world via three types of lines:</p>
+      <div class="diagram">
+        <svg width="100%" viewBox="0 0 560 200" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace">
+          <!-- RAM block -->
+          <rect x="200" y="40" width="160" height="120" rx="6" fill="#1a1e28" stroke="#5b8df8" stroke-width="1.5"/>
+          <text x="280" y="105" text-anchor="middle" fill="#5b8df8" font-size="14" font-weight="600">RAM</text>
+          <text x="280" y="122" text-anchor="middle" fill="#9ba3b8" font-size="10">2^k × n bits</text>
+          <!-- Data Input lines -->
+          <text x="15" y="72" fill="#4ade80" font-size="11">n Data</text>
+          <text x="10" y="84" fill="#4ade80" font-size="11">Inputs</text>
+          <line x1="75" y1="78" x2="200" y2="78" stroke="#4ade80" stroke-width="1.5" marker-end="url(#ag)"/>
+          <!-- Address lines -->
+          <text x="10" y="110" fill="#fbbf24" font-size="11">k Address</text>
+          <text x="18" y="122" fill="#fbbf24" font-size="11">Lines</text>
+          <line x1="80" y1="116" x2="200" y2="116" stroke="#fbbf24" stroke-width="1.5" marker-end="url(#ay)"/>
+          <!-- Data Output -->
+          <text x="378" y="72" fill="#a78bfa" font-size="11">n Data</text>
+          <text x="372" y="84" fill="#a78bfa" font-size="11">Outputs</text>
+          <line x1="360" y1="78" x2="492" y2="78" stroke="#a78bfa" stroke-width="1.5" marker-end="url(#ap)"/>
+          <!-- Control lines -->
+          <text x="20" y="152" fill="#fb923c" font-size="11">Control</text>
+          <text x="14" y="164" fill="#fb923c" font-size="11">(R/W, En)</text>
+          <line x1="80" y1="152" x2="200" y2="152" stroke="#fb923c" stroke-width="1.5" marker-end="url(#ac)"/>
+          <defs>
+            <marker id="ag" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#4ade80"/></marker>
+            <marker id="ay" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#fbbf24"/></marker>
+            <marker id="ap" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#a78bfa"/></marker>
+            <marker id="ac" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L0,6 L6,3 z" fill="#fb923c"/></marker>
+          </defs>
+        </svg>
+      </div>
+      <table class="styled-table">
+        <thead><tr><th>Signal Lines</th><th>Count</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><span class="tag tag-green">Data Input</span></td><td>n bits</td><td>Data to be written into memory</td></tr>
+          <tr><td><span class="tag tag-blue">Address</span></td><td>k bits → 2ᵏ locations</td><td>Which memory word to access</td></tr>
+          <tr><td><span class="tag tag-purple">Data Output</span></td><td>n bits</td><td>Data read out of memory</td></tr>
+          <tr><td><span class="tag tag-coral">Control (R/W)</span></td><td>1–2 bits</td><td>Read or Write operation select</td></tr>
+        </tbody>
+      </table>
+      <div class="formula">Memory size = 2^k words × n bits per word</div>
+
+      <h3>ROM — Read-Only Memory</h3>
+      <div class="box box-amber">
+        <div class="box-title">⚡ Key Difference</div>
+        <p>ROM has NO data input lines. Its contents are permanently fixed during manufacturing (or programming). Power off → data still there. This makes it <strong>non-volatile</strong>.</p>
+      </div>
+      <p>Inside a ROM, a <strong>k × 2ᵏ decoder</strong> selects one of 2ᵏ rows. Each row connects to <strong>n OR gates</strong> (one per output bit). A "cross-point" (fuse) determines if a bit is 1 or 0.</p>
+
+      <div class="box box-green">
+        <div class="box-title">ROM Example — 4×4 ROM</div>
+        <p>4 locations, 4-bit output words. Uses a 2×4 decoder (2 address lines → 4 rows) and 4 OR gates.</p>
+      </div>
+      <table class="styled-table">
+        <thead><tr><th>A1 A0</th><th>O3 O2 O1 O0</th><th>Stored Word</th></tr></thead>
+        <tbody>
+          <tr><td>0 0</td><td>0 1 1 0</td><td>6</td></tr>
+          <tr><td>0 1</td><td>1 0 1 0</td><td>10</td></tr>
+          <tr><td>1 0</td><td>1 1 1 1</td><td>15</td></tr>
+          <tr><td>1 1</td><td>1 1 0 0</td><td>12</td></tr>
+        </tbody>
+      </table>
+
+      <h3>RAM vs ROM — Quick Comparison</h3>
+      <div class="two-col">
+        <div class="box box-info">
+          <div class="box-title">RAM</div>
+          <p>✓ Read AND Write<br>✓ General purpose<br>✗ Volatile (loses data on power off)<br>📌 Used for: Running programs, OS</p>
+        </div>
+        <div class="box box-amber">
+          <div class="box-title">ROM</div>
+          <p>✓ Read only<br>✓ Non-volatile (persistent)<br>✗ Cannot be written at runtime<br>📌 Used for: BIOS, Firmware, fixed tables</p>
+        </div>
+      </div>
+
+      <div class="exam-tip">
+        <div class="tip-label">📝 Exam Tip</div>
+        <p>ROM is classified as a <strong>combinational circuit</strong> — outputs depend only on current inputs (address lines), not on any stored state. It can implement any truth table: F = Σm(...).</p>
+      </div>
+    `,
+    quiz: [
+      { q: 'A RAM with k=4 address lines and n=8 data bits can store how many bytes?', opts: ['8 bytes', '16 bytes', '32 bytes', '64 bytes'], ans: 1, exp: '2^k = 2^4 = 16 locations, each storing 8 bits = 1 byte. So 16 bytes total.' },
+      { q: 'What type of circuit is a ROM classified as?', opts: ['Sequential circuit', 'Combinational circuit', 'Arithmetic circuit', 'State machine'], ans: 1, exp: 'ROM outputs depend only on current address inputs (no feedback/state). That makes it combinational.' },
+      { q: 'Which of the following does NOT have data input lines?', opts: ['RAM', 'ROM', 'Cache', 'Registers'], ans: 1, exp: 'ROM has no data input lines because its data is fixed during manufacturing — it cannot be written at runtime.' },
+    ]
+  },
+  {
+    id: 'rtl',
+    lecture: 'Lecture 3',
+    title: 'Register Transfer Language',
+    subtitle: 'Symbolic notation for describing data movement between registers',
+    content: () => `
+      <p>Register Transfer Language (RTL) is a symbolic notation used to describe microoperations — the elementary data movement and processing steps inside a digital computer.</p>
+
+      <h3>What is a Microoperation?</h3>
+      <div class="box box-info">
+        <div class="box-title">Definition</div>
+        <p>A <strong>microoperation</strong> is an elementary operation performed on data stored in one or more registers. Examples: shift, count, clear, load, add.</p>
+      </div>
+
+      <h3>Register Naming Conventions</h3>
+      <p>Registers are named with capital letters that reflect their function. The individual flip-flops are numbered 0 (rightmost) to n-1 (leftmost).</p>
+      <table class="styled-table">
+        <thead><tr><th>Symbol</th><th>Register Name</th><th>Function</th></tr></thead>
+        <tbody>
+          <tr><td><span class="mono-label">MAR</span></td><td>Memory Address Register</td><td>Holds address to access in memory (12 bits)</td></tr>
+          <tr><td><span class="mono-label">PC</span></td><td>Program Counter</td><td>Holds address of next instruction (12 bits)</td></tr>
+          <tr><td><span class="mono-label">IR</span></td><td>Instruction Register</td><td>Holds the current instruction being decoded (16 bits)</td></tr>
+          <tr><td><span class="mono-label">AC</span></td><td>Accumulator</td><td>General purpose processor register (16 bits)</td></tr>
+          <tr><td><span class="mono-label">DR</span></td><td>Data Register</td><td>Holds data read from/to be written to memory</td></tr>
+          <tr><td><span class="mono-label">TR</span></td><td>Temporary Register</td><td>Holds temporary values during computation</td></tr>
+        </tbody>
+      </table>
+
+      <h3>RTL Notation — Transfer Statements</h3>
+      <div class="box box-purple">
+        <div class="box-title">Basic Transfer</div>
+        <p>R2 ← R1 means "copy the content of R1 into R2." The source R1 is <em>unchanged</em>.</p>
+      </div>
+      <div class="code-block"><span class="comment">// Unconditional transfer</span>
+R2 <span class="op">←</span> R1       <span class="comment">// Copy R1 into R2 every clock cycle</span>
+
+<span class="comment">// Conditional transfer</span>
+P: R2 <span class="op">←</span> R1     <span class="comment">// Only if control signal P = 1</span>
+
+<span class="comment">// Simultaneous exchange (using edge-triggered flip-flops)</span>
+T: R2 <span class="op">←</span> R1, R1 <span class="op">←</span> R2   <span class="comment">// Swap R1 and R2 in one clock cycle</span>
+
+<span class="comment">// Memory transfers</span>
+DR <span class="op">←</span> M[AR]    <span class="comment">// READ: load data from memory address in AR</span>
+M[AR] <span class="op">←</span> DR    <span class="comment">// WRITE: store DR into memory address in AR</span></div>
+
+      <div class="exam-tip">
+        <div class="tip-label">⚠️ Critical: Clock Timing</div>
+        <p>Even if control signal P becomes active at time t, the actual register transfer happens at the NEXT positive clock edge (t+1). The clock is implicit — not written in RTL statements.</p>
+      </div>
+
+      <h3>Bit-Field Notation</h3>
+      <p>A 16-bit register PC can be split into two bytes:</p>
+      <div class="code-block">PC(0-7)  <span class="comment">// or PC(L) — Low byte</span>
+PC(8-15) <span class="comment">// or PC(H) — High byte</span>
+
+<span class="comment">// Example: IR has 16 bits split as:</span>
+IR(15)   <span class="comment">// I-bit (indirect addressing flag)</span>
+IR(12-14)<span class="comment">// Operation code (3 bits)</span>
+IR(0-11) <span class="comment">// Address part (12 bits)</span></div>
+
+      <h3>Bus System Overview</h3>
+      <p>Connecting every register directly to every other register requires way too many wires. Instead, computers use a <strong>common bus</strong> — a shared highway for data.</p>
+      <div class="box box-teal">
+        <div class="box-title">How a Bus Works</div>
+        <p>At any given moment, only ONE register can drive data onto the bus (selected by a multiplexer). Any register can READ from the bus simultaneously by enabling its load input.</p>
+      </div>
+      <div class="code-block"><span class="comment">// Bus transfer notation</span>
+BUS <span class="op">←</span> C        <span class="comment">// Place register C on the bus</span>
+R1  <span class="op">←</span> BUS      <span class="comment">// Load register R1 from bus</span>
+
+<span class="comment">// Implied bus notation (shorthand)</span>
+R1 <span class="op">←</span> C          <span class="comment">// Designer knows a bus exists</span></div>
+    `,
+    quiz: [
+      { q: 'What does the RTL statement "P: R2 ← R1" mean?', opts: ['R2 is transferred to R1 always', 'R1 is copied to R2 only when P=1', 'R1 and R2 are added', 'P is loaded from R1'], ans: 1, exp: 'The colon separates the control condition. "P:" means execute the following transfer only when control signal P equals 1.' },
+      { q: 'In a 16-bit register, which bit position is number 0?', opts: ['Leftmost (most significant)', 'Rightmost (least significant)', 'Middle bit 8', 'It varies'], ans: 1, exp: 'By convention, bit 0 is the rightmost (least significant) position, and numbering increases toward the left.' },
+      { q: 'Why do computers use a bus instead of direct register connections?', opts: ['Buses are faster', 'Direct connections use too many wires', 'Buses store more data', 'Buses work without a clock'], ans: 1, exp: 'N registers with direct connections need N×(N-1) wire sets. A bus reduces this to N connections total — much more practical.' },
+    ]
+  },
+  {
+    id: 'microops',
+    lecture: 'Lectures 4–6',
+    title: 'Types of Microoperations',
+    subtitle: 'Arithmetic, Logic, and Shift operations on register data',
+    content: () => `
+      <p>Microoperations fall into three categories. These are the building blocks of all computation a CPU performs.</p>
+
+      <h3>1. Arithmetic Microoperations</h3>
+      <p>Perform numerical calculations on binary data stored in registers.</p>
+      <div class="micro-grid">
+        <div class="micro-card">
+          <div class="micro-card-title">Add</div>
+          <div class="micro-card-op">R3 ← R1 + R2</div>
+          <div class="micro-card-desc">Sum of two registers</div>
+        </div>
+        <div class="micro-card">
+          <div class="micro-card-title">Subtract</div>
+          <div class="micro-card-op">R3 ← R1 - R2</div>
+          <div class="micro-card-desc">= R1 + R2' + 1 (2's complement)</div>
+        </div>
+        <div class="micro-card">
+          <div class="micro-card-title">Increment</div>
+          <div class="micro-card-op">R1 ← R1 + 1</div>
+          <div class="micro-card-desc">Add 1 (e.g. PC increment)</div>
+        </div>
+        <div class="micro-card">
+          <div class="micro-card-title">Decrement</div>
+          <div class="micro-card-op">R1 ← R1 - 1</div>
+          <div class="micro-card-desc">Subtract 1</div>
+        </div>
+        <div class="micro-card">
+          <div class="micro-card-title">Add with Carry</div>
+          <div class="micro-card-op">R1 ← R1 + R2 + Cin</div>
+          <div class="micro-card-desc">For multi-precision arithmetic</div>
+        </div>
+        <div class="micro-card">
+          <div class="micro-card-title">2's Complement</div>
+          <div class="micro-card-op">R2 ← R2' + 1</div>
+          <div class="micro-card-desc">Negate a number</div>
+        </div>
+      </div>
+
+      <h3>2. Logic Microoperations</h3>
+      <p>Apply Boolean operations <strong>bit-by-bit</strong> to the contents of registers. Each bit is processed independently.</p>
+      <div class="box box-amber">
+        <div class="box-title">⚠️ Symbol Warning</div>
+        <p>In RTL, <code>∧</code> = AND, <code>∨</code> = OR. The <code>+</code> symbol always means arithmetic ADD in a microoperation context, never OR.</p>
+      </div>
+      <div class="micro-grid">
+        <div class="micro-card">
+          <div class="micro-card-title">AND</div>
+          <div class="micro-card-op">R ← R1 ∧ R2</div>
+          <div class="micro-card-desc">Clears bits (masking)</div>
+        </div>
+        <div class="micro-card">
+          <div class="micro-card-title">OR</div>
+          <div class="micro-card-op">R ← R1 ∨ R2</div>
+          <div class="micro-card-desc">Sets bits (OR mask)</div>
+        </div>
+        <div class="micro-card">
+          <div class="micro-card-title">XOR</div>
+          <div class="micro-card-op">R ← R1 ⊕ R2</div>
+          <div class="micro-card-desc">Toggles bits (flip select)</div>
+        </div>
+        <div class="micro-card">
+          <div class="micro-card-title">Complement</div>
+          <div class="micro-card-op">R ← R1'</div>
+          <div class="micro-card-desc">Invert all bits (NOT)</div>
+        </div>
+        <div class="micro-card">
+          <div class="micro-card-title">Clear</div>
+          <div class="micro-card-op">R ← R1 ⊕ R1</div>
+          <div class="micro-card-desc">Force register to 0</div>
+        </div>
+        <div class="micro-card">
+          <div class="micro-card-title">Transfer</div>
+          <div class="micro-card-op">R ← R1 ∨ 0</div>
+          <div class="micro-card-desc">Copy R1 (OR with 0)</div>
+        </div>
+      </div>
+
+      <div class="box box-info">
+        <div class="box-title">💡 Practical Use of Logic Ops</div>
+        <p><strong>AND with mask</strong> — extract specific bits: R ← R ∧ 0x0F (keep lower 4 bits)<br>
+        <strong>OR with mask</strong> — set specific bits: R ← R ∨ 0x80 (set bit 7)<br>
+        <strong>XOR with mask</strong> — toggle bits: R ← R ⊕ 0xFF (flip all bits)</p>
+      </div>
+
+      <h3>3. Shift Microoperations</h3>
+      <p>Move bits left or right within a register. Used for multiplication/division by powers of 2, and serial data transfer.</p>
+      <div id="shift-demo" class="demo-box">
+        <div class="demo-title">▶ Interactive: Shift Demonstration</div>
+        <div style="margin-bottom:12px">
+          <label style="font-size:13px;color:var(--text2)">Register value (binary, 8 bits):</label><br>
+          <input type="text" id="shift-input" value="01101001" maxlength="8" style="margin-top:6px;font-family:var(--mono);font-size:16px;background:var(--bg3);border:1px solid var(--border2);color:var(--text);border-radius:6px;padding:8px 12px;width:200px">
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="doShift('shl')">Shift Left (× 2)</button>
+          <button class="btn btn-primary" onclick="doShift('shr')">Shift Right (÷ 2)</button>
+          <button class="btn btn-primary" onclick="doShift('rol')">Rotate Left</button>
+          <button class="btn btn-primary" onclick="doShift('ror')">Rotate Right</button>
+        </div>
+        <div id="shift-result" style="font-family:var(--mono);color:var(--text2);font-size:13px;min-height:60px"></div>
+      </div>
+
+      <table class="styled-table">
+        <thead><tr><th>Type</th><th>Notation</th><th>Behavior</th></tr></thead>
+        <tbody>
+          <tr><td>Logical Shift Left</td><td>shl R</td><td>Bits move left, 0 enters from right. LSB → lost. ≡ ×2</td></tr>
+          <tr><td>Logical Shift Right</td><td>shr R</td><td>Bits move right, 0 enters from left. MSB → lost. ≡ ÷2</td></tr>
+          <tr><td>Arithmetic Shift Left</td><td>ashl R</td><td>Same as logical, sign bit preserved</td></tr>
+          <tr><td>Arithmetic Shift Right</td><td>ashr R</td><td>Sign bit replicated (fills with sign bit)</td></tr>
+          <tr><td>Rotate Left</td><td>rol R</td><td>MSB wraps around to LSB position</td></tr>
+          <tr><td>Rotate Right</td><td>ror R</td><td>LSB wraps around to MSB position</td></tr>
+        </tbody>
+      </table>
+    `,
+    setup: () => {
+      window.doShift = function(op) {
+        const input = document.getElementById('shift-input').value.replace(/[^01]/g,'').padStart(8,'0').slice(0,8);
+        document.getElementById('shift-input').value = input;
+        const before = input;
+        let after = '';
+        let desc = '';
+        if (op === 'shl') { after = (input + '0').slice(1); desc = `Shift Left: All bits move left by 1. 0 enters at right (LSB). Decimal: ${parseInt(before,2)} → ${parseInt(after,2)} (≈ ×2)`; }
+        if (op === 'shr') { after = '0' + input.slice(0,-1); desc = `Shift Right: All bits move right by 1. 0 enters at left (MSB). Decimal: ${parseInt(before,2)} → ${parseInt(after,2)} (≈ ÷2)`; }
+        if (op === 'rol') { after = input.slice(1) + input[0]; desc = `Rotate Left: MSB wraps to LSB. No bits lost. Decimal: ${parseInt(before,2)} → ${parseInt(after,2)}`; }
+        if (op === 'ror') { after = input[input.length-1] + input.slice(0,-1); desc = `Rotate Right: LSB wraps to MSB. No bits lost. Decimal: ${parseInt(before,2)} → ${parseInt(after,2)}`; }
+        const res = document.getElementById('shift-result');
+        res.innerHTML = `<div style="margin-bottom:8px"><span style="color:var(--text3)">Before:</span> <span style="color:var(--amber)">${before.split('').join(' ')}</span></div>
+          <div style="margin-bottom:8px"><span style="color:var(--text3)">After: </span> <span style="color:var(--green)">${after.split('').join(' ')}</span></div>
+          <div style="color:var(--accent2);font-size:12px">${desc}</div>`;
+        document.getElementById('shift-input').value = after;
+      };
+    },
+    quiz: [
+      { q: 'What is the result of shifting binary 00110100 LEFT by 1?', opts: ['00011010', '01101000', '10011010', '00110100'], ans: 1, exp: '01101000 — bits move left, 0 enters at right (LSB). Decimal: 52 → 104 (doubled!).' },
+      { q: 'In RTL, what does the ∧ symbol represent?', opts: ['Arithmetic ADD', 'Logical OR', 'Logical AND', 'Shift Left'], ans: 2, exp: '∧ is AND. The + symbol is reserved for arithmetic addition in microoperation notation.' },
+      { q: 'Which logic microoperation is used to CLEAR (zero out) specific bits?', opts: ['OR with mask of 1s', 'AND with mask of 0s', 'XOR with self', 'Complement'], ans: 1, exp: 'AND with a mask of 0s forces those bit positions to 0. E.g., R ∧ 0x0F clears the upper 4 bits.' },
+    ]
+  },
+  {
+    id: 'bus',
+    lecture: 'Lectures 4–6',
+    title: 'Bus & Memory Transfers',
+    subtitle: 'Common bus architecture using multiplexers and three-state gates',
+    content: () => `
+      <p>In a computer with many registers, connecting them all directly would require an enormous number of wires. The solution is a <strong>common bus system</strong> — a shared data highway.</p>
+
+      <h3>The Common Bus</h3>
+      <div class="box box-info">
+        <div class="box-title">What is a Bus?</div>
+        <p>A bus is a set of <strong>n wires</strong> (one per bit) shared by all registers. Only one register drives the bus at a time; all others can read from it simultaneously.</p>
+      </div>
+
+      <h3>Building a Bus with Multiplexers</h3>
+      <p>For k registers of n bits each, we need n multiplexers (one per bit position), each being a k×1 MUX.</p>
+      <div class="box box-green">
+        <div class="box-title">Example: 8 registers of 16 bits</div>
+        <p>→ 16 multiplexers needed<br>→ Each MUX: 8 data inputs + 3 selection lines (to select among 8 registers)<br>→ 3 selection lines decode to 8 possible register choices</p>
+      </div>
+
+      <h3>Interactive Bus Demo</h3>
+      <div class="demo-box">
+        <div class="demo-title">▶ Click a register to put it on the bus, then click destination</div>
+        <div id="bus-demo-ui"></div>
+      </div>
+
+      <h3>Three-State (Tri-State) Bus</h3>
+      <p>An alternative to MUX-based buses uses <strong>three-state buffer gates</strong>. Unlike normal gates that output 0 or 1, a three-state gate has a third state: <strong>high-impedance (Z)</strong> — effectively disconnected from the bus.</p>
+      <table class="styled-table">
+        <thead><tr><th>State</th><th>Output</th><th>Effect</th></tr></thead>
+        <tbody>
+          <tr><td>Logic 1</td><td>HIGH</td><td>Drives the bus line high</td></tr>
+          <tr><td>Logic 0</td><td>LOW</td><td>Drives the bus line low</td></tr>
+          <tr><td>High-Z</td><td>Disconnected</td><td>Does not affect bus — others can drive</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Memory Read/Write via Bus</h3>
+      <div class="code-block"><span class="comment">// READ from Memory</span>
+<span class="kw">Read:</span>  DR <span class="op">←</span> M[AR]
+  <span class="comment">// Step 1: AR already holds the address</span>
+  <span class="comment">// Step 2: Memory places word on bus</span>
+  <span class="comment">// Step 3: DR latches from bus</span>
+
+<span class="comment">// WRITE to Memory</span>
+<span class="kw">Write:</span> M[AR] <span class="op">←</span> DR
+  <span class="comment">// Step 1: AR holds destination address</span>
+  <span class="comment">// Step 2: DR is placed on bus</span>
+  <span class="comment">// Step 3: Memory writes from bus</span></div>
+
+      <div class="exam-tip">
+        <div class="tip-label">📝 Key Formula</div>
+        <p>A bus for k registers of n bits needs: <strong>n multiplexers</strong>, each of size <strong>k×1</strong>, controlled by <strong>log₂(k) selection bits</strong>.</p>
+      </div>
+    `,
+    setup: () => {
+      const regNames = ['R0','R1','R2','R3','AC','DR','AR','PC'];
+      const regValues = ['0110 1001','1010 0101','0001 1100','1111 0000','0101 0101','1001 0011','0000 1100','0010 0111'];
+      let src = null, phase = 'src';
+      const container = document.getElementById('bus-demo-ui');
+      if (!container) return;
+      const render = (msg, busActive) => {
+        container.innerHTML = `
+          <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px">
+            ${regNames.map((r,i) => `
+              <div onclick="busClick(${i})" class="bus-reg${src===i?' selected':''}" id="bus-reg-${i}">
+                <div style="font-size:11px;color:var(--text3)">${r}</div>
+                <div style="font-size:12px;color:${src===i?'var(--accent2)':'var(--text2)'}">${regValues[i]}</div>
+              </div>
+            `).join('')}
+          </div>
+          <div class="bus-line${busActive?' active':''}">
+            <div style="position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:11px;font-family:var(--mono);color:${busActive?'var(--accent)':'var(--text3)'}">
+              ${busActive?'BUS: '+regValues[src]:'BUS (idle)'}
+            </div>
+          </div>
+          <div style="margin-top:16px;font-size:13px;color:var(--text2)">${msg}</div>
+        `;
+      };
+      window.busClick = (i) => {
+        if (phase === 'src') {
+          src = i; phase = 'dst';
+          render(`<span style="color:var(--accent2)">${regNames[i]}</span> is driving the bus. Now click a <strong>destination</strong> register to receive the data.`, true);
+        } else if (phase === 'dst' && i !== src) {
+          const oldVal = regValues[i];
+          regValues[i] = regValues[src];
+          phase = 'src'; const prevSrc = src; src = null;
+          render(`✓ Transfer complete: <span style="color:var(--green)">${regNames[prevSrc]} → ${regNames[i]}</span>. Value ${regValues[i]} (was ${oldVal})`, false);
+        } else if (i === src) {
+          src = null; phase = 'src';
+          render('Source deselected. Click a register to place on bus.', false);
+        }
+      };
+      render('Click a register to select it as bus source.', false);
+    },
+    quiz: [
+      { q: 'For a bus connecting 4 registers of 8 bits each, how many MUXes are needed?', opts: ['4 MUXes (4×2)', '8 MUXes (4×1)', '16 MUXes', '2 MUXes'], ans: 1, exp: 'We need n=8 multiplexers (one per bit). Each MUX selects among k=4 registers, so it\'s 4×1. Total: 8 MUXes.' },
+      { q: 'What is the "high-impedance" state in a three-state gate?', opts: ['Output is 1', 'Output is 0', 'Output is disconnected from bus', 'Oscillating rapidly'], ans: 2, exp: 'High-Z (high-impedance) means the gate\'s output is effectively disconnected — it neither drives the bus high nor low, allowing other gates to control it.' },
+      { q: 'In the RTL "DR ← M[AR]", what does AR contain?', opts: ['The data to be read', 'The memory address to read from', 'The result of the operation', 'The next instruction'], ans: 1, exp: 'AR is the Address Register. It holds the memory address. DR receives the data word stored at that address.' },
+    ]
+  },
+  {
+    id: 'hdl',
+    lecture: 'Lectures 4–6',
+    title: 'Hardware Description Languages',
+    subtitle: 'VHDL and Verilog — describing digital systems at RTL level',
+    content: () => `
+      <p>Designing complex digital systems at the gate and flip-flop level by hand is extremely tedious. HDLs let engineers describe hardware behavior in code, which tools can then synthesize into actual circuits.</p>
+
+      <h3>What is an HDL?</h3>
+      <div class="box box-info">
+        <div class="box-title">Important Distinction</div>
+        <p>An HDL is <strong>NOT a programming language</strong>. Code executes sequentially; hardware runs in <strong>parallel</strong>. HDL describes the structure and behavior of hardware — signals change based on time and events, not function calls.</p>
+      </div>
+
+      <h3>The Two Major HDLs</h3>
+      <div class="two-col">
+        <div class="box box-purple">
+          <div class="box-title">VHDL</div>
+          <p>Older language, developed by the US DoD. More verbose, strongly typed. Common in military/aerospace applications and academia.</p>
+        </div>
+        <div class="box box-teal">
+          <div class="box-title">Verilog</div>
+          <p>More concise C-like syntax. Dominant in industry (Intel, AMD, Qualcomm). SystemVerilog is the modern superset used for verification.</p>
+        </div>
+      </div>
+
+      <h3>Example: 4-bit Register in Verilog</h3>
+      <div class="code-block"><span class="comment">// 4-bit D flip-flop register with synchronous load</span>
+<span class="kw">module</span> register4 (
+  <span class="kw">input</span>        clk,    <span class="comment">// clock signal</span>
+  <span class="kw">input</span>        load,   <span class="comment">// load enable (our control signal P)</span>
+  <span class="kw">input</span>  [3:0] D,      <span class="comment">// 4-bit data input</span>
+  <span class="kw">output</span> [3:0] Q       <span class="comment">// 4-bit data output</span>
+);
+  <span class="kw">reg</span> [3:0] Q;
+
+  <span class="kw">always</span> @(<span class="kw">posedge</span> clk) <span class="kw">begin</span>
+    <span class="kw">if</span> (load)            <span class="comment">// RTL equivalent: P: Q ← D</span>
+      Q <span class="op"><=</span> D;           <span class="comment">// non-blocking assignment</span>
+  <span class="kw">end</span>
+<span class="kw">endmodule</span></div>
+
+      <h3>Example: Simple ALU in Verilog</h3>
+      <div class="code-block"><span class="kw">module</span> alu (
+  <span class="kw">input</span>  [7:0] A, B,
+  <span class="kw">input</span>  [1:0] op,     <span class="comment">// 00=ADD 01=SUB 10=AND 11=OR</span>
+  <span class="kw">output</span> <span class="kw">reg</span> [7:0] result
+);
+  <span class="kw">always</span> @(*) <span class="kw">begin</span>
+    <span class="kw">case</span> (op)
+      <span class="val">2'b00</span>: result = A + B;
+      <span class="val">2'b01</span>: result = A - B;
+      <span class="val">2'b10</span>: result = A & B;  <span class="comment">// AND microoperation</span>
+      <span class="val">2'b11</span>: result = A | B;  <span class="comment">// OR microoperation</span>
+    <span class="kw">endcase</span>
+  <span class="kw">end</span>
+<span class="kw">endmodule</span></div>
+
+      <h3>HDL Design Flow</h3>
+      <div class="layer-stack" id="hdl-flow"></div>
+
+      <div class="exam-tip">
+        <div class="tip-label">📝 Remember</div>
+        <p>HDLs describe hardware at the <strong>Register Transfer Level (RTL)</strong> — the same level as RTL notation we've been studying. The HDL code is then synthesized into gates automatically.</p>
+      </div>
+    `,
+    setup: () => {
+      const steps = [
+        { name: 'HDL Source Code (Verilog/VHDL)', color: '#5b8df8', bg: 'rgba(91,141,248,0.12)' },
+        { name: 'Simulation & Verification', color: '#a78bfa', bg: 'rgba(167,139,250,0.12)' },
+        { name: 'Logic Synthesis (code → gates)', color: '#fb923c', bg: 'rgba(251,146,60,0.12)' },
+        { name: 'Place & Route (gates → chip layout)', color: '#fbbf24', bg: 'rgba(251,191,36,0.12)' },
+        { name: 'ASIC / FPGA Programming', color: '#4ade80', bg: 'rgba(74,222,128,0.12)' },
+      ];
+      const c = document.getElementById('hdl-flow');
+      if (!c) return;
+      c.innerHTML = steps.map((s,i) => `
+        <div class="layer" style="background:${s.bg};border:1px solid ${s.color}30;color:${s.color}">
+          <span>${i+1}. ${s.name}</span>
+          <span style="font-size:11px;opacity:0.6">↓</span>
+        </div>
+      `).join('');
+    },
+    quiz: [
+      { q: 'What is the fundamental difference between an HDL and a programming language?', opts: ['HDLs use different keywords', 'HDLs describe parallel hardware; PLs execute sequentially', 'HDLs cannot be compiled', 'HDLs only work with integers'], ans: 1, exp: 'Code runs one statement at a time. Hardware runs all gates simultaneously (in parallel). HDL must capture this concurrency.' },
+      { q: 'Which HDL is more common in industry today?', opts: ['VHDL', 'Verilog / SystemVerilog', 'ABEL', 'CUPL'], ans: 1, exp: 'Verilog (and its superset SystemVerilog) dominates industrial chip design at companies like Intel, AMD, Qualcomm, and Apple.' },
+      { q: 'What does "synthesis" do in the HDL design flow?', opts: ['Simulates the design', 'Converts RTL code into a gate-level netlist', 'Programs the FPGA', 'Verifies timing'], ans: 1, exp: 'Synthesis converts your high-level HDL description into an actual network of logic gates that can be placed on a chip or FPGA.' },
+    ]
+  },
+  {
+    id: 'stored-prog',
+    lecture: 'Lectures 4–6',
+    title: 'Stored Program Organization',
+    subtitle: 'How computers store instructions in memory and execute them',
+    content: () => `
+      <p>The <strong>stored program concept</strong> is the most fundamental property of a general-purpose computer — both programs (instructions) AND data reside in the same memory.</p>
+
+      <h3>The Von Neumann Model</h3>
+      <div class="box box-info">
+        <div class="box-title">Stored Program Concept</div>
+        <p>A program is a sequence of instructions stored in memory. The CPU fetches each instruction, decodes it, and executes it — one after another, automatically.</p>
+      </div>
+
+      <h3>16-bit Instruction Format</h3>
+      <p>The basic computer uses 16-bit instructions split into parts:</p>
+      <div class="diagram">
+        <svg width="100%" viewBox="0 0 560 110" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace">
+          <!-- Instruction word -->
+          <rect x="20" y="20" width="30" height="40" rx="4" fill="rgba(251,146,60,0.15)" stroke="rgba(251,146,60,0.4)"/>
+          <text x="35" y="44" text-anchor="middle" fill="#fb923c" font-size="11">I</text>
+          <text x="35" y="70" text-anchor="middle" fill="#6b7494" font-size="9">bit 15</text>
+          
+          <rect x="52" y="20" width="105" height="40" rx="4" fill="rgba(91,141,248,0.15)" stroke="rgba(91,141,248,0.4)"/>
+          <text x="104" y="44" text-anchor="middle" fill="#5b8df8" font-size="11">Opcode</text>
+          <text x="104" y="70" text-anchor="middle" fill="#6b7494" font-size="9">bits 12–14</text>
+          
+          <rect x="159" y="20" width="380" height="40" rx="4" fill="rgba(74,222,128,0.12)" stroke="rgba(74,222,128,0.3)"/>
+          <text x="349" y="44" text-anchor="middle" fill="#4ade80" font-size="11">Address / Operand</text>
+          <text x="349" y="70" text-anchor="middle" fill="#6b7494" font-size="9">bits 0–11 (12 bits → 2¹² = 4096 addressable locations)</text>
+          
+          <text x="35" y="96" text-anchor="middle" fill="#fb923c" font-size="9">Indirect</text>
+          <text x="104" y="96" text-anchor="middle" fill="#5b8df8" font-size="9">3 bits = 8 ops</text>
+          <text x="349" y="96" text-anchor="middle" fill="#4ade80" font-size="9">12 bits = 4096 addresses</text>
+        </svg>
+      </div>
+
+      <h3>Addressing Modes</h3>
+      <table class="styled-table">
+        <thead><tr><th>Mode</th><th>I-bit</th><th>Effective Address</th><th>Example</th></tr></thead>
+        <tbody>
+          <tr><td><span class="tag tag-green">Direct</span></td><td>0</td><td>Address field (0–11) directly</td><td>IR[0-11] = 100 → EA = 100</td></tr>
+          <tr><td><span class="tag tag-purple">Indirect</span></td><td>1</td><td>Word at address field contains the actual address</td><td>IR[0-11] = 100 → EA = M[100]</td></tr>
+          <tr><td><span class="tag tag-amber">Immediate</span></td><td>–</td><td>Address field IS the operand</td><td>No memory access needed</td></tr>
+        </tbody>
+      </table>
+
+      <div class="box box-amber">
+        <div class="box-title">🔍 Indirect Addressing — Why?</div>
+        <p>With 12 address bits you can only directly address 4096 locations. Indirect addressing lets you access the FULL memory by storing a larger address in memory — a pointer!</p>
+      </div>
+
+      <h3>Instruction Types in Basic Computer</h3>
+      <div class="micro-grid">
+        <div class="micro-card">
+          <div class="micro-card-title" style="color:var(--text3)">Memory-Reference</div>
+          <div class="micro-card-op">D7 = 0</div>
+          <div class="micro-card-desc">AND, ADD, LDA, STA, BUN, BSA, ISZ</div>
+        </div>
+        <div class="micro-card">
+          <div class="micro-card-title" style="color:var(--text3)">Register-Reference</div>
+          <div class="micro-card-op">D7=1, I=0</div>
+          <div class="micro-card-desc">CLA, CLE, INC, SPA, SNA, HLT...</div>
+        </div>
+        <div class="micro-card">
+          <div class="micro-card-title" style="color:var(--text3)">Input-Output</div>
+          <div class="micro-card-op">D7=1, I=1</div>
+          <div class="micro-card-desc">INP, OUT, SKI, SKO, ION, IOF</div>
+        </div>
+      </div>
+
+      <h3>Instruction Set Completeness</h3>
+      <p>A computer's instruction set is considered <strong>complete</strong> if it includes instructions in these 4 categories:</p>
+      <ol>
+        <li><strong>Arithmetic, Logical, Shift</strong> — process data (ADD, AND, SHR...)</li>
+        <li><strong>Data Movement</strong> — move between memory ↔ registers (LDA, STA...)</li>
+        <li><strong>Program Control</strong> — branches, conditionals (BUN, BSA, ISZ...)</li>
+        <li><strong>Input/Output</strong> — communicate with peripherals (INP, OUT...)</li>
+      </ol>
+    `,
+    quiz: [
+      { q: 'In a 16-bit instruction with I-bit, opcode (3 bits), and address (12 bits), what does the I-bit indicate?', opts: ['Interrupt flag', 'Whether addressing is indirect', 'Immediate mode', 'Input/Output instruction'], ans: 1, exp: 'The I-bit (bit 15) distinguishes direct (I=0) from indirect (I=1) addressing. With I=1, the address field points to a memory location that contains the actual operand address.' },
+      { q: 'How many distinct memory locations can a 12-bit address field access?', opts: ['1024', '2048', '4096', '8192'], ans: 2, exp: '2^12 = 4096 locations. That is why the basic computer\'s MAR and PC are 12 bits wide.' },
+      { q: 'A register-reference instruction is identified by which decoder output?', opts: ['D0 = 1', 'D3 = 1', 'D7 = 1, I = 0', 'D7 = 1, I = 1'], ans: 2, exp: 'D7=1 (opcode = 111) means the instruction is either register-reference (I=0) or input-output (I=1). D7=0 means it\'s a memory-reference instruction.' },
+    ]
+  },
+  {
+    id: 'registers',
+    lecture: 'Lectures 4–6',
+    title: 'Computer Registers',
+    subtitle: 'The internal register file of the basic computer',
+    content: () => `
+      <p>The basic computer has 8 key registers, each with a specific role in program execution. Understanding them is essential for tracing instruction cycles.</p>
+
+      <h3>Register File — Interactive</h3>
+      <div id="reg-viz" class="demo-box">
+        <div class="demo-title">▶ Click a register to see its role</div>
+        <div id="reg-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px"></div>
+        <div id="reg-detail" style="font-size:13px;color:var(--text2);min-height:60px;padding:12px;background:var(--bg3);border-radius:8px;border:1px solid var(--border)">Click a register above to learn more.</div>
+      </div>
+
+      <h3>Common Bus System Connections</h3>
+      <p>The 8 registers share a common 16-bit bus with 8 selection combinations (S2S1S0 = 000 to 111):</p>
+      <table class="styled-table">
+        <thead><tr><th>S2 S1 S0</th><th>Register Selected</th><th>Width</th></tr></thead>
+        <tbody>
+          <tr><td>0 0 0</td><td>AR (Memory Address Register)</td><td>12 bits</td></tr>
+          <tr><td>0 0 1</td><td>PC (Program Counter)</td><td>12 bits</td></tr>
+          <tr><td>0 1 0</td><td>DR (Data Register)</td><td>16 bits</td></tr>
+          <tr><td>0 1 1</td><td>AC (Accumulator)</td><td>16 bits</td></tr>
+          <tr><td>1 0 0</td><td>IR (Instruction Register)</td><td>16 bits</td></tr>
+          <tr><td>1 0 1</td><td>TR (Temporary Register)</td><td>16 bits</td></tr>
+          <tr><td>1 1 0</td><td>Memory Output</td><td>16 bits</td></tr>
+          <tr><td>1 1 1</td><td>— (not used)</td><td>—</td></tr>
+        </tbody>
+      </table>
+
+      <h3>The Accumulator (AC)</h3>
+      <p>The AC is the central register. Most arithmetic and logic operations use it as both a source and destination:</p>
+      <div class="code-block"><span class="comment">// ADD instruction example</span>
+<span class="comment">// Instruction: ADD address_X</span>
+<span class="comment">// Meaning: AC ← AC + M[X]</span>
+
+DR <span class="op">←</span> M[AR]     <span class="comment">// Fetch operand from memory</span>
+AC <span class="op">←</span> AC + DR   <span class="comment">// Add to accumulator</span>
+DR <span class="op">←</span> AC        <span class="comment">// Result stays in AC</span>
+
+<span class="comment">// CLA instruction (Clear Accumulator)</span>
+AC <span class="op">←</span> 0          <span class="comment">// No memory operand needed!</span></div>
+    `,
+    setup: () => {
+      const regs = [
+        { name: 'AR', full: 'Memory Address Register', bits: 12, color: '#5b8df8', desc: '12-bit register that holds the memory address being accessed. Connected directly to the address input of memory. All memory reads/writes go through AR.', example: 'Before reading from memory: AR ← PC (to fetch instruction), or AR ← IR[0-11] (to access operand).' },
+        { name: 'PC', full: 'Program Counter', bits: 12, color: '#4ade80', desc: '12-bit counter that tracks the address of the NEXT instruction. After each instruction fetch, PC is incremented automatically. A branch instruction overwrites PC with a new address.', example: 'PC starts at 0x000. After fetching instruction: PC ← PC + 1. Branch: PC ← IR[0-11].' },
+        { name: 'DR', full: 'Data Register', bits: 16, color: '#fbbf24', desc: '16-bit register that temporarily holds data read from memory or data to be written to memory. Acts as a buffer between memory and the rest of the CPU.', example: 'Read: DR ← M[AR]. Then: AC ← AC + DR.' },
+        { name: 'AC', full: 'Accumulator', bits: 16, color: '#fb923c', desc: '16-bit general purpose register. The primary register for arithmetic and logic operations. Most instructions use AC as both input and result destination.', example: 'ADD: AC ← AC + DR. CLA: AC ← 0. CMA: AC ← AC\' (complement).' },
+        { name: 'IR', full: 'Instruction Register', bits: 16, color: '#a78bfa', desc: '16-bit register that holds the instruction currently being decoded and executed. IR is split: bit 15 (I), bits 14-12 (opcode, 3-to-8 decoded), bits 11-0 (address/operand).', example: 'Fetch: IR ← M[AR]. Decode: opcode = IR[12-14], I = IR[15], AR ← IR[0-11].' },
+        { name: 'TR', full: 'Temporary Register', bits: 16, color: '#2dd4bf', desc: '16-bit scratch register used by the control unit to hold intermediate values during multi-step operations. Not directly user-accessible.', example: 'During BSA (Branch-and-Save-Return): TR ← PC, M[AR] ← TR.' },
+        { name: 'OUTR', full: 'Output Register', bits: 8, color: '#f472b6', desc: '8-bit register connected to the output device (e.g., display). The OUT instruction copies the lower 8 bits of AC into OUTR, which drives the output peripheral.', example: 'OUT instruction: OUTR ← AC[0-7]. The output device reads OUTR.' },
+        { name: 'INPR', full: 'Input Register', bits: 8, color: '#4ade80', desc: '8-bit register connected to the input device (e.g., keyboard). When a character is typed, it\'s placed in INPR. The INP instruction copies it to AC.', example: 'INP instruction: AC[0-7] ← INPR, then clear the FGI (input flag).' },
+      ];
+      const grid = document.getElementById('reg-grid');
+      const detail = document.getElementById('reg-detail');
+      if (!grid) return;
+      grid.innerHTML = regs.map((r,i) => `
+        <div onclick="showReg(${i})" style="padding:12px;background:var(--bg3);border:1px solid var(--border);border-radius:8px;cursor:pointer;transition:all 0.15s" 
+             onmouseover="this.style.borderColor='${r.color}50'" onmouseout="this.style.borderColor='var(--border)'">
+          <div style="font-family:var(--mono);font-size:16px;font-weight:600;color:${r.color}">${r.name}</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:3px">${r.full}</div>
+          <div style="display:flex;gap:2px;margin-top:8px">
+            ${Array(r.bits).fill(0).map((_,j) => `<div style="flex:1;height:6px;background:${r.color}${j<3?'80':'25'};border-radius:1px"></div>`).join('')}
+          </div>
+          <div style="font-size:10px;color:var(--text3);margin-top:3px;font-family:var(--mono)">${r.bits} bits</div>
+        </div>
+      `).join('');
+      window.showReg = (i) => {
+        const r = regs[i];
+        detail.innerHTML = `<strong style="color:${r.color};font-family:var(--mono)">${r.name} — ${r.full}</strong>
+          <p style="margin:8px 0 6px;color:var(--text2)">${r.desc}</p>
+          <div style="background:var(--bg4);padding:8px 12px;border-radius:6px;font-family:var(--mono);font-size:12px;color:var(--accent2)">Example: ${r.example}</div>`;
+      };
+    },
+    quiz: [
+      { q: 'Which register holds the address of the NEXT instruction to fetch?', opts: ['IR', 'MAR', 'PC', 'DR'], ans: 2, exp: 'The Program Counter (PC) is incremented after each instruction fetch to point at the next sequential instruction.' },
+      { q: 'In the bus selection code S2S1S0 = 011, which register drives the bus?', opts: ['DR', 'AC', 'TR', 'IR'], ans: 1, exp: 'S2S1S0 = 011 (binary 3) selects the AC (Accumulator).' },
+      { q: 'Why is the IR split into three sections?', opts: ['To save wire space', 'The I-bit, opcode, and address each serve different decoding purposes', 'To implement indirect addressing only', 'Hardware limitation'], ans: 1, exp: 'I-bit → selects addressing mode. Opcode (3 bits) → decoded by 3×8 decoder to D0-D7. Address (12 bits) → loaded into AR for memory access.' },
+    ]
+  },
+  {
+    id: 'timing',
+    lecture: 'Lectures 4–6',
+    title: 'Timing & Control',
+    subtitle: 'How the control unit sequences microoperations using timing signals',
+    content: () => `
+      <p>The control unit is the brain of the CPU — it generates the signals that cause all the microoperations to happen in the right order at the right time.</p>
+
+      <h3>Master Clock & Timing Signals</h3>
+      <div class="box box-info">
+        <div class="box-title">Clock-Driven Sequencing</div>
+        <p>A master clock drives all flip-flops and registers. The <strong>Sequence Counter (SC)</strong> counts clock pulses and produces timing signals T0, T1, T2, ... T15 via a 4×16 decoder.</p>
+      </div>
+      <div class="code-block"><span class="comment">// Timing signal generation</span>
+SC (<span class="val">4-bit</span>) → 4×16 decoder → T0, T1, T2 ... T15
+
+<span class="comment">// SC can be incremented or cleared</span>
+SC <span class="op">←</span> SC + 1  <span class="comment">// normal: next timing signal</span>
+SC <span class="op">←</span> 0       <span class="comment">// clear: go back to T0</span>
+
+<span class="comment">// Example: at T4, if D3=1, clear SC</span>
+D3 · T4: SC <span class="op">←</span> 0   <span class="comment">// restart sequence</span></code></div>
+
+      <h3>Control Organization Types</h3>
+      <div class="two-col">
+        <div class="box box-amber">
+          <div class="box-title">Hardwired Control</div>
+          <p>Control logic built from gates, flip-flops, decoders. Very fast. Changing it requires re-wiring the chip. Used in RISC processors (ARM, RISC-V).</p>
+        </div>
+        <div class="box box-teal">
+          <div class="box-title">Microprogrammed Control</div>
+          <p>Control signals stored in a "control memory." Each microinstruction specifies control signals. Easier to modify — update the microprogram. Used in complex CISC (x86).</p>
+        </div>
+      </div>
+
+      <h3>Instruction Decode Logic</h3>
+      <p>When IR is loaded, its parts are decoded simultaneously:</p>
+      <div class="diagram">
+        <svg width="100%" viewBox="0 0 540 180" xmlns="http://www.w3.org/2000/svg" style="font-family:'JetBrains Mono',monospace">
+          <!-- IR box -->
+          <rect x="20" y="60" width="100" height="60" rx="5" fill="#1a1e28" stroke="#363d52"/>
+          <text x="70" y="90" text-anchor="middle" fill="#a78bfa" font-size="12" font-weight="600">IR</text>
+          <text x="70" y="106" text-anchor="middle" fill="#6b7494" font-size="10">16 bits</text>
+          <!-- Decoder -->
+          <rect x="180" y="30" width="120" height="50" rx="5" fill="rgba(91,141,248,0.12)" stroke="rgba(91,141,248,0.3)"/>
+          <text x="240" y="53" text-anchor="middle" fill="#5b8df8" font-size="11">3×8 Decoder</text>
+          <text x="240" y="68" text-anchor="middle" fill="#6b7494" font-size="9">IR[12-14] → D0..D7</text>
+          <!-- I flip-flop -->
+          <rect x="180" y="100" width="120" height="40" rx="5" fill="rgba(251,146,60,0.1)" stroke="rgba(251,146,60,0.3)"/>
+          <text x="240" y="124" text-anchor="middle" fill="#fb923c" font-size="11">I Flip-Flop</text>
+          <!-- AR -->
+          <rect x="180" y="155" width="120" height="20" rx="4" fill="rgba(74,222,128,0.1)" stroke="rgba(74,222,128,0.25)"/>
+          <text x="240" y="169" text-anchor="middle" fill="#4ade80" font-size="10">AR ← IR[0-11]</text>
+          <!-- Arrows from IR -->
+          <line x1="120" y1="75" x2="180" y2="55" stroke="#5b8df8" stroke-width="1.5"/>
+          <line x1="120" y1="90" x2="180" y2="120" stroke="#fb923c" stroke-width="1.5"/>
+          <line x1="120" y1="108" x2="180" y2="163" stroke="#4ade80" stroke-width="1.5"/>
+          <!-- Outputs -->
+          <line x1="300" y1="55" x2="380" y2="55" stroke="#5b8df8" stroke-width="1.5"/>
+          <text x="385" y="59" fill="#5b8df8" font-size="10">D0..D7 (to gates)</text>
+          <line x1="300" y1="120" x2="380" y2="120" stroke="#fb923c" stroke-width="1.5"/>
+          <text x="385" y="124" fill="#fb923c" font-size="10">I (direct/indirect)</text>
+          <text x="30" y="50" fill="#a78bfa" font-size="10">At T2:</text>
+        </svg>
+      </div>
+
+      <h3>Various CPU Architectures</h3>
+      <table class="styled-table">
+        <thead><tr><th>Architecture</th><th>Operand Location</th><th>Example Instruction</th></tr></thead>
+        <tbody>
+          <tr><td><span class="tag tag-purple">Stack-Based</span></td><td>Implicit stack top</td><td>PUSH A; PUSH B; ADD (pops 2, pushes sum)</td></tr>
+          <tr><td><span class="tag tag-blue">Accumulator</span></td><td>Always uses AC</td><td>ADD M[100] → AC ← AC + M[100]</td></tr>
+          <tr><td><span class="tag tag-amber">Register-Memory</span></td><td>1 register + 1 memory</td><td>ADD R1, M[100] → R1 ← R1 + M[100]</td></tr>
+          <tr><td><span class="tag tag-green">Register-Register (Load/Store)</span></td><td>All operands in registers</td><td>ADD R1, R2, R3 → R1 ← R2 + R3</td></tr>
+        </tbody>
+      </table>
+      <div class="exam-tip">
+        <div class="tip-label">📝 Modern CPUs</div>
+        <p>Modern CPUs (RISC-V, ARM, MIPS) use <strong>Register-Register (Load/Store)</strong> architecture. Only LOAD and STORE instructions access memory; all ALU operations use registers only.</p>
+      </div>
+    `,
+    quiz: [
+      { q: 'The Sequence Counter (SC) is a 4-bit counter. How many timing signals can it produce?', opts: ['4', '8', '12', '16'], ans: 3, exp: 'A 4-bit counter counts from 0000 to 1111 (0–15), producing 16 timing signals T0 through T15 via a 4×16 decoder.' },
+      { q: 'Which control organization is easier to modify after fabrication?', opts: ['Hardwired control', 'Microprogrammed control', 'Both are equally easy', 'Neither can be modified'], ans: 1, exp: 'Microprogrammed control stores control signals in a "control memory." You just update the microprogram — no hardware changes needed. Hardwired requires re-wiring.' },
+      { q: 'In a pure load/store (register-register) architecture, how does an ADD instruction work?', opts: ['ADD reads directly from memory', 'ADD reads two registers and writes to a register', 'ADD always uses the stack', 'ADD uses the accumulator only'], ans: 1, exp: 'In load/store ISAs (ARM, RISC-V), ALU instructions only operate on registers. Memory is accessed exclusively via LOAD and STORE instructions.' },
+    ]
+  },
+  {
+    id: 'instruction-cycle',
+    lecture: 'Lecture 7',
+    title: 'The Instruction Cycle',
+    subtitle: 'Fetch → Decode → Execute: how the CPU processes each instruction',
+    content: () => `
+      <p>The CPU executes programs by repeating a three-phase loop for each instruction. This loop is called the <strong>instruction cycle</strong> (or fetch-decode-execute cycle).</p>
+
+      <h3>The Four Phases</h3>
+      <div id="cycle-steps-viz"></div>
+      <div style="display:flex;gap:8px;margin:14px 0;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="animateCycle()">▶ Animate Cycle</button>
+        <button class="btn" onclick="stopCycle()">■ Stop</button>
+      </div>
+
+      <h3>Phase 1: FETCH</h3>
+      <p>Get the next instruction from memory. This takes 2 clock cycles (T0, T1):</p>
+      <div class="code-block"><span class="comment">// T0: Transfer PC to AR, put instruction address on bus</span>
+T0: AR <span class="op">←</span> PC
+    <span class="comment">// (Bus: S2S1S0 = 001 to select PC, load AR)</span>
+
+<span class="comment">// T1: Read memory into IR, increment PC</span>
+T1: IR <span class="op">←</span> M[AR], PC <span class="op">←</span> PC + 1
+    <span class="comment">// (Bus: S2S1S0 = 111 for memory, load IR; enable INR on PC)</span></div>
+
+      <h3>Phase 2: DECODE</h3>
+      <p>Decode the instruction fetched. Takes 1 clock cycle (T2):</p>
+      <div class="code-block"><span class="comment">// T2: Decode opcode, extract I-bit and address</span>
+T2: AR <span class="op">←</span> IR[0-11]    <span class="comment">// address part to AR</span>
+    I  <span class="op">←</span> IR[15]       <span class="comment">// indirect flag</span>
+    <span class="comment">// Opcode IR[12-14] drives the 3×8 decoder (D0..D7)</span></div>
+
+      <h3>Phase 3 (optional): Read Indirect Address</h3>
+      <p>Only if I=1 (indirect addressing). Takes 1 clock cycle (T3 for indirect case):</p>
+      <div class="code-block"><span class="comment">// D7=0, I=1: indirect memory-reference instruction</span>
+T3: AR <span class="op">←</span> M[AR]   <span class="comment">// replace AR with actual effective address</span>
+    <span class="comment">// AR now holds the true operand address</span></div>
+
+      <h3>Phase 4: EXECUTE</h3>
+      <p>Perform the operation. Three paths at T3 (or T4 for indirect):</p>
+      <div class="code-block"><span class="comment">// Path 1: Memory-Reference (D7=0)</span>
+<span class="comment">// e.g., ADD: AC ← AC + M[AR]</span>
+T4: DR <span class="op">←</span> M[AR]
+T5: AC <span class="op">←</span> AC + DR, SC <span class="op">←</span> 0
+
+<span class="comment">// Path 2: Register-Reference (D7=1, I=0)</span>
+<span class="comment">// e.g., CLA: AC ← 0 (single clock cycle)</span>
+T3: AC <span class="op">←</span> 0, SC <span class="op">←</span> 0
+
+<span class="comment">// Path 3: Input-Output (D7=1, I=1)</span>
+<span class="comment">// e.g., INP: AC[0-7] ← INPR, FGI ← 0</span>
+T3: AC[0-7] <span class="op">←</span> INPR, FGI <span class="op">←</span> 0, SC <span class="op">←</span> 0</div>
+
+      <h3>Complete Fetch-Decode-Execute Example</h3>
+      <div class="box box-info">
+        <div class="box-title">🔍 Trace: ADD instruction at memory address 100</div>
+        <p>Assume PC=100 and memory[100] = 0001 000 001001000 (ADD, direct, address=0x048)</p>
+      </div>
+      <table class="styled-table">
+        <thead><tr><th>Time</th><th>Phase</th><th>Microoperation</th><th>Effect</th></tr></thead>
+        <tbody>
+          <tr><td>T0</td><td>Fetch</td><td>AR ← PC</td><td>AR = 100</td></tr>
+          <tr><td>T1</td><td>Fetch</td><td>IR ← M[AR], PC ← PC+1</td><td>IR = ADD instruction, PC = 101</td></tr>
+          <tr><td>T2</td><td>Decode</td><td>AR ← IR[0-11], I ← IR[15]</td><td>AR = 0x048, I = 0 (direct)</td></tr>
+          <tr><td>T3</td><td>Execute</td><td>DR ← M[AR]</td><td>DR = M[0x048] (the operand)</td></tr>
+          <tr><td>T4</td><td>Execute</td><td>AC ← AC + DR, SC ← 0</td><td>AC updated, cycle restarts</td></tr>
+        </tbody>
+      </table>
+
+      <div class="exam-tip">
+        <div class="tip-label">📝 Key Rule</div>
+        <p>At the end of every instruction, SC is cleared to 0, which returns control to T0 and starts the next instruction's fetch cycle. The CPU loops forever until a HALT (HLT) instruction sets a flag that stops the clock.</p>
+      </div>
+    `,
+    setup: () => {
+      const steps = [
+        { num: 1, title: 'FETCH', desc: 'T0: AR ← PC | T1: IR ← M[AR], PC ← PC+1 | Retrieve instruction from memory', color: '#5b8df8' },
+        { num: 2, title: 'DECODE', desc: 'T2: AR ← IR[0-11], I ← IR[15] | The 3×8 decoder activates D0..D7 | Determine instruction type', color: '#a78bfa' },
+        { num: 3, title: 'INDIRECT (if I=1)', desc: 'T3: AR ← M[AR] | Only for indirect addressing | Loads the true effective address', color: '#fbbf24' },
+        { num: 4, title: 'EXECUTE', desc: 'Varies by instruction type | Memory-ref, Register-ref, or I/O | SC ← 0 at end → return to T0', color: '#4ade80' },
+      ];
+      const container = document.getElementById('cycle-steps-viz');
+      if (!container) return;
+      const render = (active) => {
+        container.innerHTML = steps.map((s,i) => `
+          <div class="cycle-step${active===i?' active-step':''}" style="${active===i?`border-color:${s.color}50;background:${s.color}10`:''}" id="cs-${i}">
+            <div class="cycle-step-num" style="${active===i?`border-color:${s.color};color:${s.color}`:''}">${s.num}</div>
+            <div>
+              <div class="cycle-step-title" style="${active===i?`color:${s.color}`:''}">${s.title}</div>
+              <div class="cycle-step-desc">${s.desc}</div>
+            </div>
+          </div>
+        `).join('');
+      };
+      render(-1);
+      let animTimer = null;
+      window.animateCycle = () => {
+        let i = 0;
+        if (animTimer) clearInterval(animTimer);
+        animTimer = setInterval(() => {
+          render(i % steps.length);
+          i++;
+        }, 1200);
+      };
+      window.stopCycle = () => {
+        if (animTimer) { clearInterval(animTimer); animTimer = null; }
+        render(-1);
+      };
+    },
+    quiz: [
+      { q: 'During which timing signal does the PC get incremented?', opts: ['T0', 'T1', 'T2', 'T3'], ans: 1, exp: 'At T1: IR ← M[AR] AND PC ← PC+1 happen simultaneously. After T1, PC already points to the next instruction.' },
+      { q: 'What happens to the Sequence Counter (SC) at the end of every instruction?', opts: ['It continues counting', 'It is cleared to 0', 'It pauses until next instruction', 'It is loaded with the instruction address'], ans: 1, exp: 'SC ← 0 returns the control to T0, starting the fetch phase of the next instruction. This is what makes the CPU execute continuously.' },
+      { q: 'In the instruction cycle, when does indirect address resolution occur?', opts: ['During Fetch (T0-T1)', 'During Decode (T2)', 'After Decode, before Execute (T3 when I=1)', 'During Execute'], ans: 2, exp: 'If I=1 after decoding at T2, then at T3 we do AR ← M[AR] to get the actual effective address. This adds one extra memory access before execution.' },
+      { q: 'What is the minimum number of clock cycles to execute a register-reference instruction?', opts: ['2 cycles', '3 cycles (T0, T1, T2+execute)', '4 cycles', '5 cycles'], ans: 1, exp: 'Register-reference instructions (like CLA) execute entirely at T3, using the decode result. Total: T0 (fetch addr), T1 (fetch IR), T2 (decode), T3 (execute) = 4 timing signals but 3 clocks after T0. The combined fetch+decode+execute = 4 total timing steps.' },
+    ]
+  },
+];
+
+// Build navigation
+const navList = document.getElementById('nav-list');
+const lectureGroups = {};
+topics.forEach((t, i) => {
+  const g = t.lecture;
+  if (!lectureGroups[g]) { lectureGroups[g] = []; }
+  lectureGroups[g].push({ ...t, idx: i });
+});
+
+const done = new Set(JSON.parse(localStorage.getItem('ca_done') || '[]'));
+
+function buildNav() {
+  navList.innerHTML = '';
+  Object.entries(lectureGroups).forEach(([lec, ts]) => {
+    const sec = document.createElement('div');
+    sec.className = 'nav-section';
+    sec.textContent = lec;
+    navList.appendChild(sec);
+    ts.forEach(t => {
+      const item = document.createElement('div');
+      item.className = 'nav-item' + (done.has(t.id) ? ' done' : '');
+      item.id = 'nav-' + t.id;
+      item.innerHTML = `<span class="nav-num">${String(t.idx+1).padStart(2,'0')}</span><span>${t.title}</span><span class="check">✓</span>`;
+      item.onclick = () => loadTopic(t.idx);
+      navList.appendChild(item);
+    });
+  });
+  updateProgress();
+}
+
+function updateProgress() {
+  const total = topics.length;
+  const doneCount = done.size;
+  const pct = (doneCount / total) * 100;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-label').textContent = `${doneCount} / ${total} topics done`;
+}
+
+let currentTopic = 0;
+let quizState = {};
+
+function loadTopic(idx) {
+  currentTopic = idx;
+  const t = topics[idx];
+  // Update nav
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const ni = document.getElementById('nav-' + t.id);
+  if (ni) { ni.classList.add('active'); ni.scrollIntoView({ block: 'nearest' }); }
+  // Build content
+  document.getElementById('main').scrollTo({ top: 0 });
+  const tc = document.getElementById('topic-content');
+  quizState = { current: 0, answered: false, score: 0 };
+  const quiz = t.quiz || [];
+  tc.innerHTML = `
+    <div class="topic-badge">
+      <span>${t.lecture}</span>
+    </div>
+    <div class="topic-title">${t.title}</div>
+    <div class="topic-subtitle">${t.subtitle}</div>
+    <div class="divider"></div>
+    ${t.content()}
+    ${quiz.length ? buildQuiz(quiz, 0) : ''}
+    <div style="display:flex;gap:10px;margin-top:30px">
+      ${idx > 0 ? `<button class="btn" onclick="loadTopic(${idx-1})">← Previous</button>` : ''}
+      ${idx < topics.length-1 ? `<button class="btn btn-primary" onclick="loadTopic(${idx+1})">Next Topic →</button>` : '<button class="btn btn-primary" onclick="showComplete()">🎉 Complete!</button>'}
+    </div>
+  `;
+  if (t.setup) setTimeout(() => t.setup(), 50);
+  // Mark topic done
+  done.add(t.id);
+  localStorage.setItem('ca_done', JSON.stringify([...done]));
+  buildNav();
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if (ni) ni.classList.add('active');
+}
+
+function buildQuiz(quiz, qIdx) {
+  if (qIdx >= quiz.length) return '';
+  const q = quiz[qIdx];
+  return `
+    <div class="quiz-section" id="quiz-box">
+      <div class="quiz-header">
+        <h3>Quick Check</h3>
+        <span class="quiz-badge">Q ${qIdx+1} / ${quiz.length}</span>
+      </div>
+      <div class="quiz-q">${q.q}</div>
+      <div class="quiz-options">
+        ${q.opts.map((o,i) => `<button class="quiz-opt" id="opt-${i}" onclick="answerQ(${i},${q.ans},${qIdx},${quiz.length})">${String.fromCharCode(65+i)}. ${o}</button>`).join('')}
+      </div>
+      <div class="quiz-feedback" id="quiz-feedback"></div>
+      <div class="quiz-nav">
+        <span class="quiz-progress" id="quiz-prog">Answer to continue</span>
+        <button class="btn" id="quiz-next-btn" onclick="nextQ(${qIdx+1})" style="display:none">Next Question →</button>
+      </div>
+    </div>
+  `;
+}
+
+window.answerQ = (chosen, correct, qIdx, total) => {
+  const quiz = topics[currentTopic].quiz;
+  const q = quiz[qIdx];
+  document.querySelectorAll('.quiz-opt').forEach((b,i) => {
+    b.classList.add('disabled');
+    if (i === correct) b.classList.add('correct');
+    else if (i === chosen && chosen !== correct) b.classList.add('wrong');
+  });
+  const fb = document.getElementById('quiz-feedback');
+  const isCorrect = chosen === correct;
+  fb.className = 'quiz-feedback show ' + (isCorrect ? 'correct' : 'wrong');
+  fb.textContent = (isCorrect ? '✓ Correct! ' : '✗ Not quite. ') + q.exp;
+  if (qIdx + 1 < total) {
+    document.getElementById('quiz-next-btn').style.display = '';
+    document.getElementById('quiz-prog').textContent = isCorrect ? 'Great!' : 'Review and continue';
+  } else {
+    document.getElementById('quiz-prog').textContent = '✓ Quiz complete!';
+    if (isCorrect) document.getElementById('quiz-prog').style.color = 'var(--green)';
+  }
+};
+
+window.nextQ = (nextIdx) => {
+  const quiz = topics[currentTopic].quiz;
+  const qBox = document.getElementById('quiz-box');
+  qBox.outerHTML = buildQuiz(quiz, nextIdx);
+};
+
+window.showComplete = () => {
+  document.getElementById('topic-content').innerHTML = `
+    <div style="text-align:center;padding:60px 20px">
+      <div style="font-size:48px;margin-bottom:16px">🎓</div>
+      <h2 style="color:var(--accent2);margin-bottom:10px">All Topics Covered!</h2>
+      <p style="color:var(--text2)">You've studied all ${topics.length} topics in Computer Architecture.</p>
+      <p style="color:var(--text3);font-size:13px;margin-top:20px">Topics completed: ${done.size} / ${topics.length}</p>
+      <button class="btn btn-primary" style="margin-top:20px" onclick="loadTopic(0)">Start Over</button>
+    </div>
+  `;
+};
+
+// Scroll-to-top button
+document.getElementById('main').addEventListener('scroll', () => {
+  const st = document.getElementById('scroll-top');
+  if (document.getElementById('main').scrollTop > 200) st.classList.add('visible');
+  else st.classList.remove('visible');
+});
+
+// Init
+buildNav();
+loadTopic(0);
+</script>
+</body>
+</html>
